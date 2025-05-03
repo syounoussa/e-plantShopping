@@ -1,35 +1,54 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeItem, updateQuantity } from './CartSlice';
+import { removeItem, updateQuantity, addItem } from './CartSlice'; // Importer les actions nécessaires
 import './CartItem.css';
 
 const CartItem = ({ onContinueShopping }) => {
-  const cart = useSelector(state => state.cart.items);
+  const cart = useSelector(state => state.cart.items); // Récupérer les articles du panier depuis Redux
   const dispatch = useDispatch();
 
-  // Calculate total amount for all products in the cart
+  // Calculer le montant total pour tous les produits dans le panier
   const calculateTotalAmount = () => {
- 
+    let total = 0;
+    cart.forEach(item => {
+      const quantity = item.quantity;
+      const cost = parseFloat(item.cost.substring(1)); // Convertir le coût en nombre
+      total += quantity * cost; // Ajouter le coût total de l'article au total général
+    });
+    return total.toFixed(2); // Retourner le total avec 2 décimales
+  };
+
+  // Calculer le coût total basé sur la quantité pour un article
+  const calculateTotalCost = (item) => {
+    const cost = parseFloat(item.cost.substring(1)); // Convertir le coût en nombre
+    return (item.quantity * cost).toFixed(2); // Retourner le coût total avec 2 décimales
   };
 
   const handleContinueShopping = (e) => {
-   
+    onContinueShopping(e); // Appeler la fonction passée depuis le composant parent
   };
 
-
-
+  // Déclencher l'action updateQuantity pour mettre à jour la quantité
   const handleIncrement = (item) => {
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity + 1 })); // Incrémenter la quantité
   };
 
   const handleDecrement = (item) => {
-   
+    if (item.quantity > 1) {
+      dispatch(updateQuantity({ name: item.name, quantity: item.quantity - 1 })); // Décrémenter la quantité si > 1
+    } else {
+      dispatch(removeItem(item.name)); // Supprimer l'article si la quantité tombe à 0
+    }
   };
 
+  // Déclencher l'action addItem pour ajouter un article au panier
+  const handleAddItem = (item) => {
+    dispatch(addItem(item)); // Ajouter un article au panier
+  };
+
+  // Déclencher l'action removeItem pour retirer un article du panier
   const handleRemove = (item) => {
-  };
-
-  // Calculate total cost based on quantity for an item
-  const calculateTotalCost = (item) => {
+    dispatch(removeItem(item.name)); // Supprimer directement l'article
   };
 
   return (
@@ -64,5 +83,9 @@ const CartItem = ({ onContinueShopping }) => {
 };
 
 export default CartItem;
+
+
+
+
 
 
